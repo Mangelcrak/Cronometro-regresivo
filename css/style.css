@@ -5,13 +5,15 @@
 }
 
 body{
-    background:#ffffff;
+    background:#fff;
     font-family:Arial, Helvetica, sans-serif;
     min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
     padding:20px;
+    -webkit-user-select:none;
+    user-select:none;
 }
 
 .container{
@@ -26,13 +28,21 @@ h1{
     font-size:clamp(2rem,4vw,4rem);
 }
 
-.controls{
-    display:flex;
-    justify-content:center;
-    gap:15px;
-    flex-wrap:wrap;
-    margin-bottom:40px;
+.display{
+    margin-top:20px;
 }
+
+#timer{
+    font-size:clamp(5rem,15vw,16rem);
+    font-weight:bold;
+    color:#111;
+    letter-spacing:10px;
+    transition:.3s;
+}
+
+/* ========================= */
+/* INPUT */
+/* ========================= */
 
 input{
     width:220px;
@@ -43,17 +53,21 @@ input{
     font-size:1.1rem;
 }
 
+/* ========================= */
+/* BOTONES */
+/* ========================= */
+
 button{
     width:60px;
     height:60px;
     border:none;
     border-radius:50%;
     cursor:pointer;
-    font-size:1.5rem;
     display:flex;
     justify-content:center;
     align-items:center;
-    transition:0.3s;
+    font-size:1.5rem;
+    transition:.25s;
     font-weight:bold;
 }
 
@@ -61,14 +75,14 @@ button:hover{
     transform:scale(1.08);
 }
 
+button,
+input{
+    touch-action:manipulation;
+}
+
 #startBtn{
     background:#28a745;
     color:white;
-}
-
-#pauseBtn{
-    background:#ffc107;
-    color:black;
 }
 
 #lapBtn{
@@ -86,16 +100,9 @@ button:hover{
     color:white;
 }
 
-.display{
-    margin-top:20px;
-}
-
-#timer{
-    font-size:clamp(5rem,15vw,16rem);
-    font-weight:bold;
-    color:#111;
-    letter-spacing:10px;
-}
+/* ========================= */
+/* FULLSCREEN */
+/* ========================= */
 
 .fullscreen-btn{
     position:fixed;
@@ -103,14 +110,38 @@ button:hover{
     right:15px;
     width:50px;
     height:50px;
+    border:none;
+    border-radius:10px;
     background:#007bff;
     color:white;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
     font-size:22px;
-    z-index:999;
+    z-index:9999;
 }
+
+/* ========================= */
+/* MENÚ MÓVIL */
+/* ========================= */
+
+.menu-btn{
+    display:none;
+}
+
+/* ========================= */
+/* CONTROLES PC */
+/* ========================= */
+
+.controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:40px;
+}
+
+/* ========================= */
+/* MARCAS */
+/* ========================= */
 
 .laps-container{
     margin-top:50px;
@@ -139,7 +170,7 @@ button:hover{
 }
 
 /* ========================= */
-/* MODO PRESENTACIÓN */
+/* PRESENTACIÓN */
 /* ========================= */
 
 .presentation-mode h1{
@@ -150,102 +181,162 @@ button:hover{
     display:none;
 }
 
-.presentation-mode .controls{
-    position:fixed;
-    bottom:25px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:15px;
-    z-index:1000;
-    padding:12px 20px;
-    border-radius:40px;
-    background:rgba(255,255,255,0.25);
-    backdrop-filter:blur(10px);
-}
-
-.presentation-mode input{
-    display:none;
-}
-
 .presentation-mode #timer{
-    font-size:clamp(10rem,30vw,28rem);
     width:100vw;
     height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
+    font-size:clamp(8rem,25vw,24rem);
     letter-spacing:20px;
 }
 
-.presentation-mode .fullscreen-btn{
-    top:auto;
-    bottom:25px;
-    right:25px;
-    opacity:0.5;
+.presentation-mode .controls{
+    opacity:0;
+    pointer-events:none;
 }
 
-/* Tablets */
+.presentation-mode .menu-btn{
+    display:none !important;
+}
+
+/* ========================= */
+/* TABLETS */
+/* ========================= */
 
 @media(max-width:768px){
 
     #timer{
         font-size:clamp(4rem,18vw,8rem);
-    }
-
-    .presentation-mode #timer{
-        font-size:clamp(5rem,22vw,12rem);
-    }
-}
-
-/* Celulares */
-
-@media(max-width:480px){
-
-    .controls{
-        flex-direction:column;
-        align-items:center;
-    }
-
-    input{
-        width:100%;
-        max-width:320px;
-    }
-
-    button{
-        width:60px;
-        height:60px;
-    }
-
-    #timer{
-        font-size:clamp(3rem,20vw,6rem);
         letter-spacing:4px;
     }
 
-    .fullscreen-btn{
-        width:45px;
-        height:45px;
-        font-size:18px;
+    .container{
+        padding-bottom:120px;
     }
 
-    .presentation-mode .controls{
-        bottom:15px;
-        gap:10px;
-        padding:10px;
+    /* botón menú */
+
+    .menu-btn{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+
+        position:fixed;
+
+        bottom:20px;
+        right:20px;
+
+        width:65px;
+        height:65px;
+
+        border:none;
+
+        border-radius:50%;
+
+        background:#343a40;
+
+        color:white;
+
+        font-size:30px;
+
+        z-index:10000;
+
+        box-shadow:
+        0 4px 15px rgba(0,0,0,.25);
+    }
+
+    /* panel desplegable */
+
+    .controls{
+
+        position:fixed;
+
+        left:50%;
+        bottom:20px;
+
+        transform:
+        translateX(-50%)
+        translateY(200px);
+
+        width:220px;
+
+        display:grid;
+
+        grid-template-columns:
+        repeat(2,1fr);
+
+        gap:15px;
+
+        padding:20px;
+
+        background:white;
+
+        border-radius:25px;
+
+        box-shadow:
+        0 5px 25px rgba(0,0,0,.20);
+
+        opacity:0;
+
+        pointer-events:none;
+
+        transition:
+        transform .35s ease,
+        opacity .35s ease;
+
+        z-index:9998;
+    }
+
+    .controls.show{
+
+        opacity:1;
+
+        pointer-events:auto;
+
+        transform:
+        translateX(-50%)
+        translateY(0);
+    }
+
+    .controls input{
+
+        grid-column:1 / 3;
+
+        width:100%;
     }
 
     .presentation-mode #timer{
-        font-size:clamp(4rem,24vw,8rem);
-        letter-spacing:6px;
+
+        font-size:
+        clamp(5rem,22vw,12rem);
     }
 }
 
-button,
-input{
-    touch-action: manipulation;
-}
+/* ========================= */
+/* MÓVILES PEQUEÑOS */
+/* ========================= */
 
-body{
-    -webkit-user-select:none;
-    user-select:none;
+@media(max-width:480px){
+
+    #timer{
+
+        font-size:
+        clamp(3rem,20vw,6rem);
+
+        letter-spacing:3px;
+    }
+
+    .fullscreen-btn{
+
+        width:45px;
+        height:45px;
+
+        font-size:18px;
+    }
+
+    .controls{
+
+        width:210px;
+    }
 }
