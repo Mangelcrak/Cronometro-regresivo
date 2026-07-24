@@ -6,7 +6,9 @@ const resetBtn = document.getElementById("resetBtn");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const lapBtn = document.getElementById("lapBtn");
 const presentationBtn = document.getElementById("presentationBtn");
+const menuBtn = document.getElementById("menuBtn");
 
+const controls = document.querySelector(".controls");
 const lapsList = document.getElementById("lapsList");
 
 let countdown = null;
@@ -20,11 +22,15 @@ let lapCounter = 0;
 
 let presentationMode = false;
 
+let presentationTimeout = null;
+
 /* ========================= */
 /* EVENTOS MÓVILES */
 /* ========================= */
 
-function addTapEvent(element, callback) {
+function addTapEvent(element, callback){
+
+    if(!element) return;
 
     element.addEventListener("click", callback);
 
@@ -33,48 +39,49 @@ function addTapEvent(element, callback) {
         e.preventDefault();
 
         callback();
-    }, { passive: false });
+
+    }, { passive:false });
 }
 
 /* ========================= */
 /* DISPLAY */
 /* ========================= */
 
-function updateDisplay(seconds) {
+function updateDisplay(seconds){
 
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
 
     timerDisplay.textContent =
-        String(mins).padStart(2, "0")
+        String(mins).padStart(2,"0")
         + ":"
         +
-        String(secs).padStart(2, "0");
+        String(secs).padStart(2,"0");
 
-    if (seconds <= 10 && seconds > 0) {
+    if(seconds <= 10 && seconds > 0){
 
         timerDisplay.style.color = "red";
 
-    } else {
+    }else{
 
         timerDisplay.style.color = "#111";
     }
 }
 
 /* ========================= */
-/* FORMATO PARA MARCAS */
+/* FORMATO MARCAS */
 /* ========================= */
 
-function formatTime(seconds) {
+function formatTime(seconds){
 
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
 
     return (
-        String(mins).padStart(2, "0")
+        String(mins).padStart(2,"0")
         + ":"
         +
-        String(secs).padStart(2, "0")
+        String(secs).padStart(2,"0")
     );
 }
 
@@ -82,19 +89,19 @@ function formatTime(seconds) {
 /* TEMPORIZADOR */
 /* ========================= */
 
-function runTimer() {
+function runTimer(){
 
-    if (isPaused) return;
+    if(isPaused) return;
 
     totalSeconds--;
 
-    if (totalSeconds < 0) {
+    if(totalSeconds < 0){
         totalSeconds = 0;
     }
 
     updateDisplay(totalSeconds);
 
-    if (totalSeconds <= 0) {
+    if(totalSeconds <= 0){
 
         clearInterval(countdown);
 
@@ -117,12 +124,12 @@ function runTimer() {
 
 addTapEvent(startBtn, () => {
 
-    if (!isRunning && totalSeconds === 0) {
+    if(!isRunning && totalSeconds === 0){
 
         const minutes =
             parseFloat(minutesInput.value);
 
-        if (isNaN(minutes) || minutes <= 0) {
+        if(isNaN(minutes) || minutes <= 0){
 
             alert("Ingrese una cantidad válida de minutos.");
             return;
@@ -144,7 +151,7 @@ addTapEvent(startBtn, () => {
         return;
     }
 
-    if (isRunning && !isPaused) {
+    if(isRunning && !isPaused){
 
         isPaused = true;
 
@@ -153,7 +160,7 @@ addTapEvent(startBtn, () => {
         return;
     }
 
-    if (isRunning && isPaused) {
+    if(isRunning && isPaused){
 
         isPaused = false;
 
@@ -167,7 +174,7 @@ addTapEvent(startBtn, () => {
 
 addTapEvent(lapBtn, () => {
 
-    if (!isRunning) return;
+    if(!isRunning) return;
 
     lapCounter++;
 
@@ -215,34 +222,69 @@ addTapEvent(resetBtn, () => {
 /* FULLSCREEN */
 /* ========================= */
 
-addTapEvent(fullscreenBtn, () => {
+addTapEvent(fullscreenBtn, async () => {
 
-    try {
+    try{
 
-        if (!document.fullscreenElement) {
+        if(!document.fullscreenElement){
 
-            if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
 
-                document.documentElement.requestFullscreen();
-            }
+        }else{
 
-        } else {
-
-            if (document.exitFullscreen) {
-
-                document.exitFullscreen();
-            }
+            await document.exitFullscreen();
         }
 
-    } catch (error) {
+    }catch(error){
 
         console.log("Fullscreen no soportado");
     }
 });
 
 /* ========================= */
-/* PRESENTACIÓN */
+/* MENÚ MÓVIL */
 /* ========================= */
+
+addTapEvent(menuBtn, () => {
+
+    controls.classList.toggle("show");
+
+    if(controls.classList.contains("show")){
+
+        menuBtn.textContent = "✕";
+
+    }else{
+
+        menuBtn.textContent = "☰";
+    }
+});
+
+/* ========================= */
+/* MODO PRESENTACIÓN */
+/* ========================= */
+
+function hidePresentationControls(){
+
+    controls.classList.remove("show");
+
+    menuBtn.style.display = "none";
+}
+
+function showPresentationControls(){
+
+    controls.classList.add("show");
+
+    clearTimeout(presentationTimeout);
+
+    presentationTimeout = setTimeout(() => {
+
+        if(presentationMode){
+
+            controls.classList.remove("show");
+        }
+
+    }, 3000);
+}
 
 addTapEvent(presentationBtn, () => {
 
@@ -252,14 +294,36 @@ addTapEvent(presentationBtn, () => {
         "presentation-mode"
     );
 
-    if (presentationMode) {
+    if(presentationMode){
 
         presentationBtn.textContent = "❌";
 
-    } else {
+        hidePresentationControls();
+
+    }else{
 
         presentationBtn.textContent = "🖥";
+
+        menuBtn.style.display = "";
     }
+});
+
+/* ========================= */
+/* TOQUE EN PANTALLA */
+/* ========================= */
+
+document.addEventListener("click", (e) => {
+
+    if(!presentationMode) return;
+
+    if(
+        e.target.closest(".controls") ||
+        e.target.closest("#fullscreenBtn")
+    ){
+        return;
+    }
+
+    showPresentationControls();
 });
 
 /* ========================= */
