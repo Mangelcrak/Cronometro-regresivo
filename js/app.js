@@ -1,3 +1,4 @@
+
 const timerDisplay = document.getElementById("timer");
 const minutesInput = document.getElementById("minutesInput");
 
@@ -12,131 +13,127 @@ const controls = document.querySelector(".controls");
 const lapsList = document.getElementById("lapsList");
 
 let countdown = null;
-
 let totalSeconds = 0;
 
 let isPaused = false;
 let isRunning = false;
-
 let lapCounter = 0;
 
 let presentationMode = false;
+let menuOpen = false;
 
-let presentationTimeout = null;
+/* =========================
+   EVENTOS DE RATÓN Y MÓVILES
+========================= */
 
-/* ========================= */
-/* EVENTOS MÓVILES */
-/* ========================= */
+function addTapEvent(element, callback) {
+    if (!element) return;
 
-function addTapEvent(element, callback){
+    let suppressClick = false;
+    let suppressTimeout = null;
 
-    if(!element) return;
+    element.addEventListener("touchstart", (event) => {
+        event.preventDefault();
 
-    element.addEventListener("click", callback);
-
-    element.addEventListener("touchstart", (e) => {
-
-        e.preventDefault();
+        suppressClick = true;
+        clearTimeout(suppressTimeout);
 
         callback();
 
-    }, { passive:false });
+        suppressTimeout = setTimeout(() => {
+            suppressClick = false;
+        }, 500);
+    }, { passive: false });
+
+    element.addEventListener("click", () => {
+        if (suppressClick) {
+            suppressClick = false;
+            clearTimeout(suppressTimeout);
+            return;
+        }
+
+        callback();
+    });
 }
 
-/* ========================= */
-/* DISPLAY */
-/* ========================= */
+/* =========================
+   DISPLAY DEL TEMPORIZADOR
+========================= */
 
-function updateDisplay(seconds){
-
+function updateDisplay(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
 
     timerDisplay.textContent =
-        String(mins).padStart(2,"0")
-        + ":"
-        +
-        String(secs).padStart(2,"0");
+        String(mins).padStart(2, "0") +
+        ":" +
+        String(secs).padStart(2, "0");
 
-    if(seconds <= 10 && seconds > 0){
-
+    if (seconds <= 10 && seconds > 0) {
         timerDisplay.style.color = "red";
-
-    }else{
-
+    } else {
         timerDisplay.style.color = "#111";
     }
 }
 
-/* ========================= */
-/* FORMATO MARCAS */
-/* ========================= */
+/* =========================
+   FORMATO DE MARCAS
+========================= */
 
-function formatTime(seconds){
-
+function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
 
     return (
-        String(mins).padStart(2,"0")
-        + ":"
-        +
-        String(secs).padStart(2,"0")
+        String(mins).padStart(2, "0") +
+        ":" +
+        String(secs).padStart(2, "0")
     );
 }
 
-/* ========================= */
-/* TEMPORIZADOR */
-/* ========================= */
+/* =========================
+   TEMPORIZADOR
+========================= */
 
-function runTimer(){
+function runTimer() {
+    if (isPaused || !isRunning) return;
 
-    if(isPaused) return;
-
-    totalSeconds--;
-
-    if(totalSeconds < 0){
-        totalSeconds = 0;
-    }
+    totalSeconds = Math.max(0, totalSeconds - 1);
 
     updateDisplay(totalSeconds);
 
-    if(totalSeconds <= 0){
-
+    if (totalSeconds <= 0) {
         clearInterval(countdown);
 
         countdown = null;
-
         isRunning = false;
         isPaused = false;
 
         startBtn.textContent = "▶";
 
-        timerDisplay.textContent = "00:00";
-
         alert("⏰ Tiempo finalizado");
     }
 }
 
-/* ========================= */
-/* INICIAR / PAUSAR */
-/* ========================= */
+/* =========================
+   INICIAR Y PAUSAR
+========================= */
 
 addTapEvent(startBtn, () => {
+    if (!isRunning && totalSeconds === 0) {
+        const minutes = parseFloat(minutesInput.value);
 
-    if(!isRunning && totalSeconds === 0){
-
-        const minutes =
-            parseFloat(minutesInput.value);
-
-        if(isNaN(minutes) || minutes <= 0){
-
+        if (!Number.isFinite(minutes) || minutes <= 0) {
             alert("Ingrese una cantidad válida de minutos.");
             return;
         }
 
-        totalSeconds =
-            Math.round(minutes * 60);
+        totalSeconds = Math.round(minutes * 60);
+
+        if (totalSeconds <= 0) {
+            alert("El tiempo debe ser de al menos un segundo.");
+            return;
+        }
 
         updateDisplay(totalSeconds);
 
@@ -144,190 +141,146 @@ addTapEvent(startBtn, () => {
         isPaused = false;
 
         startBtn.textContent = "⏸";
-
-        countdown =
-            setInterval(runTimer, 1000);
+        countdown = setInterval(runTimer, 1000);
 
         return;
     }
 
-    if(isRunning && !isPaused){
-
+    if (isRunning && !isPaused) {
         isPaused = true;
-
         startBtn.textContent = "▶";
-
         return;
     }
 
-    if(isRunning && isPaused){
-
+    if (isRunning && isPaused) {
         isPaused = false;
-
         startBtn.textContent = "⏸";
     }
 });
 
-/* ========================= */
-/* MARCAS */
-/* ========================= */
+/* =========================
+   MARCAS DE TIEMPO
+========================= */
 
 addTapEvent(lapBtn, () => {
-
-    if(!isRunning) return;
+    if (!isRunning) return;
 
     lapCounter++;
 
-    const li =
-        document.createElement("li");
+    const li = document.createElement("li");
 
     li.textContent =
-        "#" +
-        lapCounter +
+        "#" + lapCounter +
         " - Tiempo restante: " +
         formatTime(totalSeconds);
 
     lapsList.prepend(li);
 });
 
-/* ========================= */
-/* RESET */
-/* ========================= */
+/* =========================
+   REINICIAR
+========================= */
 
 addTapEvent(resetBtn, () => {
-
     clearInterval(countdown);
 
     countdown = null;
-
     totalSeconds = 0;
 
     isPaused = false;
     isRunning = false;
-
     lapCounter = 0;
 
     startBtn.textContent = "▶";
 
     minutesInput.value = "";
 
-    timerDisplay.textContent = "00:00";
-
-    timerDisplay.style.color = "#111";
+    updateDisplay(0);
 
     lapsList.innerHTML = "";
 });
 
-/* ========================= */
-/* FULLSCREEN */
-/* ========================= */
+/* =========================
+   PANTALLA COMPLETA
+========================= */
 
 addTapEvent(fullscreenBtn, async () => {
-
-    try{
-
-        if(!document.fullscreenElement){
-
+    try {
+        if (!document.fullscreenElement) {
             await document.documentElement.requestFullscreen();
-
-        }else{
-
+        } else {
             await document.exitFullscreen();
         }
-
-    }catch(error){
-
-        console.log("Fullscreen no soportado");
+    } catch (error) {
+        console.error("No fue posible activar la pantalla completa:", error);
     }
 });
 
-/* ========================= */
-/* MENÚ MÓVIL */
-/* ========================= */
+/* =========================
+   MENÚ DESPLEGABLE
+========================= */
 
-addTapEvent(menuBtn, () => {
+function updateMenuButton() {
+    if (presentationMode) {
+        menuBtn.textContent = menuOpen
+            ? "Cerrar opciones ✕"
+            : "☰ Opciones";
 
-    controls.classList.toggle("show");
+        menuBtn.setAttribute("aria-expanded", String(menuOpen));
+        menuBtn.setAttribute("aria-label",
+            menuOpen ? "Cerrar opciones" : "Abrir opciones");
 
-    if(controls.classList.contains("show")){
-
-        menuBtn.textContent = "✕";
-
-    }else{
-
-        menuBtn.textContent = "☰";
-    }
-});
-
-/* ========================= */
-/* MODO PRESENTACIÓN */
-/* ========================= */
-
-function hidePresentationControls(){
-
-    controls.classList.remove("show");
-
-    menuBtn.style.display = "none";
-}
-
-function showPresentationControls(){
-
-    controls.classList.add("show");
-
-    clearTimeout(presentationTimeout);
-
-    presentationTimeout = setTimeout(() => {
-
-        if(presentationMode){
-
-            controls.classList.remove("show");
-        }
-
-    }, 3000);
-}
-
-addTapEvent(presentationBtn, () => {
-
-    presentationMode = !presentationMode;
-
-    document.body.classList.toggle(
-        "presentation-mode"
-    );
-
-    if(presentationMode){
-
-        presentationBtn.textContent = "❌";
-
-        hidePresentationControls();
-
-    }else{
-
-        presentationBtn.textContent = "🖥";
-
-        menuBtn.style.display = "";
-    }
-});
-
-/* ========================= */
-/* TOQUE EN PANTALLA */
-/* ========================= */
-
-document.addEventListener("click", (e) => {
-
-    if(!presentationMode) return;
-
-    if(
-        e.target.closest(".controls") ||
-        e.target.closest("#fullscreenBtn")
-    ){
         return;
     }
 
-    showPresentationControls();
+    menuBtn.textContent = menuOpen ? "✕" : "☰";
+    menuBtn.setAttribute("aria-expanded", String(menuOpen));
+    menuBtn.setAttribute("aria-label",
+        menuOpen ? "Cerrar menú" : "Abrir menú");
+}
+
+function setMenuOpen(open) {
+    menuOpen = open;
+
+    controls.classList.toggle("show", menuOpen);
+
+    updateMenuButton();
+}
+
+addTapEvent(menuBtn, () => {
+    setMenuOpen(!menuOpen);
 });
 
-/* ========================= */
-/* ESTADO INICIAL */
-/* ========================= */
+/* =========================
+   MODO PRESENTACIÓN
+========================= */
 
+addTapEvent(presentationBtn, () => {
+    presentationMode = !presentationMode;
+
+    document.body.classList.toggle(
+        "presentation-mode",
+        presentationMode
+    );
+
+    if (presentationMode) {
+        presentationBtn.textContent = "❌";
+        presentationBtn.title = "Salir del modo presentación";
+
+        // El menú comienza plegado, pero permanece disponible.
+        setMenuOpen(false);
+    } else {
+        presentationBtn.textContent = "🖥";
+        presentationBtn.title = "Modo presentación";
+
+        // Restaurar la vista normal y cerrar el menú.
+        setMenuOpen(false);
+    }
+});
+
+/* =========================
+   ESTADO INICIAL
+========================= */
+
+setMenuOpen(false);
 updateDisplay(0);
