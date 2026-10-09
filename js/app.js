@@ -8,7 +8,6 @@ const fullscreenBtn = document.getElementById("fullscreenBtn");
 const lapBtn = document.getElementById("lapBtn");
 const presentationBtn = document.getElementById("presentationBtn");
 const menuBtn = document.getElementById("menuBtn");
-
 const controls = document.querySelector(".controls");
 const lapsList = document.getElementById("lapsList");
 
@@ -17,48 +16,31 @@ let totalSeconds = 0;
 
 let isPaused = false;
 let isRunning = false;
+
 let lapCounter = 0;
-
 let presentationMode = false;
-let menuOpen = false;
+let presentationTimeout = null;
 
-/* =========================
-   EVENTOS DE RATÓN Y MÓVILES
-========================= */
+
+/* EVENTOS MÓVILES */
+
 
 function addTapEvent(element, callback) {
     if (!element) return;
 
-    let suppressClick = false;
-    let suppressTimeout = null;
+    element.addEventListener("click", (event) => {
+        callback(event);
+    });
 
     element.addEventListener("touchstart", (event) => {
         event.preventDefault();
-
-        suppressClick = true;
-        clearTimeout(suppressTimeout);
-
-        callback();
-
-        suppressTimeout = setTimeout(() => {
-            suppressClick = false;
-        }, 500);
+        callback(event);
     }, { passive: false });
-
-    element.addEventListener("click", () => {
-        if (suppressClick) {
-            suppressClick = false;
-            clearTimeout(suppressTimeout);
-            return;
-        }
-
-        callback();
-    });
 }
 
-/* =========================
-   DISPLAY DEL TEMPORIZADOR
-========================= */
+
+/* DISPLAY */
+
 
 function updateDisplay(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -76,9 +58,9 @@ function updateDisplay(seconds) {
     }
 }
 
-/* =========================
-   FORMATO DE MARCAS
-========================= */
+
+/* FORMATO MARCAS */
+
 
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -91,14 +73,18 @@ function formatTime(seconds) {
     );
 }
 
-/* =========================
-   TEMPORIZADOR
-========================= */
+
+/* TEMPORIZADOR */
+
 
 function runTimer() {
-    if (isPaused || !isRunning) return;
+    if (isPaused) return;
 
-    totalSeconds = Math.max(0, totalSeconds - 1);
+    totalSeconds--;
+
+    if (totalSeconds < 0) {
+        totalSeconds = 0;
+    }
 
     updateDisplay(totalSeconds);
 
@@ -106,34 +92,31 @@ function runTimer() {
         clearInterval(countdown);
 
         countdown = null;
+
         isRunning = false;
         isPaused = false;
 
         startBtn.textContent = "▶";
+        timerDisplay.textContent = "00:00";
 
         alert("⏰ Tiempo finalizado");
     }
 }
 
-/* =========================
-   INICIAR Y PAUSAR
-========================= */
+
+/* INICIAR / PAUSAR */
+
 
 addTapEvent(startBtn, () => {
     if (!isRunning && totalSeconds === 0) {
         const minutes = parseFloat(minutesInput.value);
 
-        if (!Number.isFinite(minutes) || minutes <= 0) {
+        if (isNaN(minutes) || minutes <= 0) {
             alert("Ingrese una cantidad válida de minutos.");
             return;
         }
 
         totalSeconds = Math.round(minutes * 60);
-
-        if (totalSeconds <= 0) {
-            alert("El tiempo debe ser de al menos un segundo.");
-            return;
-        }
 
         updateDisplay(totalSeconds);
 
@@ -141,6 +124,7 @@ addTapEvent(startBtn, () => {
         isPaused = false;
 
         startBtn.textContent = "⏸";
+
         countdown = setInterval(runTimer, 1000);
 
         return;
@@ -158,9 +142,9 @@ addTapEvent(startBtn, () => {
     }
 });
 
-/* =========================
-   MARCAS DE TIEMPO
-========================= */
+
+/* MARCAS */
+
 
 addTapEvent(lapBtn, () => {
     if (!isRunning) return;
@@ -170,39 +154,43 @@ addTapEvent(lapBtn, () => {
     const li = document.createElement("li");
 
     li.textContent =
-        "#" + lapCounter +
+        "#" +
+        lapCounter +
         " - Tiempo restante: " +
         formatTime(totalSeconds);
 
     lapsList.prepend(li);
 });
 
-/* =========================
-   REINICIAR
-========================= */
+
+/* RESET */
+
 
 addTapEvent(resetBtn, () => {
     clearInterval(countdown);
 
     countdown = null;
+
     totalSeconds = 0;
 
     isPaused = false;
     isRunning = false;
+
     lapCounter = 0;
 
     startBtn.textContent = "▶";
 
     minutesInput.value = "";
 
-    updateDisplay(0);
+    timerDisplay.textContent = "00:00";
+    timerDisplay.style.color = "#111";
 
     lapsList.innerHTML = "";
 });
 
-/* =========================
-   PANTALLA COMPLETA
-========================= */
+
+/* FULLSCREEN */
+
 
 addTapEvent(fullscreenBtn, async () => {
     try {
@@ -212,50 +200,62 @@ addTapEvent(fullscreenBtn, async () => {
             await document.exitFullscreen();
         }
     } catch (error) {
-        console.error("No fue posible activar la pantalla completa:", error);
+        console.log("Fullscreen no soportado");
     }
 });
 
-/* =========================
-   MENÚ DESPLEGABLE
-========================= */
 
-function updateMenuButton() {
-    if (presentationMode) {
-        menuBtn.textContent = menuOpen
-            ? "Cerrar opciones ✕"
-            : "☰ Opciones";
+/* MENÚ DESPLEGABLE */
 
-        menuBtn.setAttribute("aria-expanded", String(menuOpen));
-        menuBtn.setAttribute("aria-label",
-            menuOpen ? "Cerrar opciones" : "Abrir opciones");
 
-        return;
+addTapEvent(menuBtn, (event) => {
+    // Evita que el clic llegue al documento y reabra el menú.
+    if (event) {
+        event.stopPropagation();
     }
 
-    menuBtn.textContent = menuOpen ? "✕" : "☰";
-    menuBtn.setAttribute("aria-expanded", String(menuOpen));
-    menuBtn.setAttribute("aria-label",
-        menuOpen ? "Cerrar menú" : "Abrir menú");
-}
+    const isOpen = controls.classList.toggle("show");
 
-function setMenuOpen(open) {
-    menuOpen = open;
+    menuBtn.textContent = isOpen ? "✕" : "☰";
 
-    controls.classList.toggle("show", menuOpen);
-
-    updateMenuButton();
-}
-
-addTapEvent(menuBtn, () => {
-    setMenuOpen(!menuOpen);
+    if (isOpen && presentationMode) {
+        clearTimeout(presentationTimeout);
+    }
 });
 
-/* =========================
-   MODO PRESENTACIÓN
-========================= */
 
-addTapEvent(presentationBtn, () => {
+/* MODO PRESENTACIÓN */
+
+
+function hidePresentationControls() {
+    clearTimeout(presentationTimeout);
+
+    controls.classList.remove("show");
+    menuBtn.textContent = "☰";
+
+    // No ocultar el botón: debe poder abrirse nuevamente.
+    menuBtn.style.display = "flex";
+}
+
+function showPresentationControls() {
+    controls.classList.add("show");
+    menuBtn.textContent = "✕";
+
+    clearTimeout(presentationTimeout);
+
+    presentationTimeout = setTimeout(() => {
+        if (presentationMode) {
+            controls.classList.remove("show");
+            menuBtn.textContent = "☰";
+        }
+    }, 3000);
+}
+
+addTapEvent(presentationBtn, (event) => {
+    if (event) {
+        event.stopPropagation();
+    }
+
     presentationMode = !presentationMode;
 
     document.body.classList.toggle(
@@ -263,24 +263,52 @@ addTapEvent(presentationBtn, () => {
         presentationMode
     );
 
+    clearTimeout(presentationTimeout);
+
     if (presentationMode) {
         presentationBtn.textContent = "❌";
-        presentationBtn.title = "Salir del modo presentación";
 
-        // El menú comienza plegado, pero permanece disponible.
-        setMenuOpen(false);
+        // Mantener el botón del menú disponible en escritorio.
+        menuBtn.style.display = "flex";
+
+        hidePresentationControls();
     } else {
         presentationBtn.textContent = "🖥";
-        presentationBtn.title = "Modo presentación";
 
-        // Restaurar la vista normal y cerrar el menú.
-        setMenuOpen(false);
+        controls.classList.remove("show");
+        menuBtn.textContent = "☰";
+
+        // Restaurar el estilo normal definido por CSS.
+        menuBtn.style.display = "";
     }
 });
 
-/* =========================
-   ESTADO INICIAL
-========================= */
 
-setMenuOpen(false);
+/* CLICS EN MODO PRESENTACIÓN */
+
+document.addEventListener("click", (event) => {
+    if (!presentationMode) return;
+
+    // No interferir con el botón que abre o cierra el menú.
+    if (event.target.closest("#menuBtn")) {
+        return;
+    }
+
+    // Permitir usar los controles sin cerrar ni reabrir el menú.
+    if (event.target.closest(".controls")) {
+        return;
+    }
+
+    if (event.target.closest("#fullscreenBtn")) {
+        return;
+    }
+
+    // Un clic fuera de los controles los muestra temporalmente.
+    showPresentationControls();
+});
+
+
+/* ESTADO INICIAL */
+
+
 updateDisplay(0);
