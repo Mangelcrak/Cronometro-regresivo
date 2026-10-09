@@ -15,10 +15,13 @@ Cronómetro Regresivo es una aplicación web diseñada para configurar y visuali
 - 📱 Usar la aplicación desde diferentes dispositivos.
 
 ## 🖼️ Vista previa
+Escritorio
+<img width="1912" height="867" alt="image" src="https://github.com/user-attachments/assets/ef9df070-a111-4f55-8a6b-d3a155cf4206" />
 
-<!-- Agrega aquí una captura de pantalla de la aplicación -->
+Movil
+<img width="272" height="595" alt="image" src="https://github.com/user-attachments/assets/8f3ad296-057c-42c3-95f8-d8daa118e711" />
+<img width="271" height="592" alt="image" src="https://github.com/user-attachments/assets/0124bf33-1d4d-48e2-a046-8342dcce93ad" />
 
-*Próximamente: capturas de la versión de escritorio y móvil.*
 
 ## 🧰 ¿Cómo fue desarrollado?
 
@@ -35,7 +38,7 @@ Este proyecto utiliza tecnologías web fundamentales:
 3. Inicia el contador y utiliza sus controles.
 4. Prueba el modo de presentación y la pantalla completa.
 
-🔗 **Demo:** [Agregar enlace de GitHub Pages]
+🔗 **Demo:** [Ver demo](https://mangelcrak.github.io/Cronometro-regresivo/)
 
 💻 **Código fuente:** [Ver repositorio](https://github.com/Mangelcrak/Cronometro-regresivo)
 
