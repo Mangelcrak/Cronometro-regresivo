@@ -4,15 +4,17 @@
 
 Cronómetro Regresivo es una aplicación web diseñada para configurar y visualizar cuentas regresivas de manera práctica. Su interfaz adaptable permite utilizarla tanto en computadores como en dispositivos móviles.
 
-## ✨ ¿Qué puedes hacer?
+## ✨ Funcionalidades
 
-- ⏳ Configurar una cuenta regresiva.
-- ▶️ Iniciar y pausar el contador.
-- 🔄 Reiniciar el tiempo cuando lo necesites.
-- 🚩 Registrar marcas de tiempo.
-- 🖥️ Activar el modo de presentación para ver el contador en grande.
-- ⛶ Utilizar la pantalla completa.
-- 📱 Usar la aplicación desde diferentes dispositivos.
+- ⏳ Configuración de la duración de la cuenta regresiva.
+- ▶️ Controles para iniciar, pausar y reanudar el contador.
+- 🔄 Reinicio del temporizador.
+- 🚩 Registro de marcas de tiempo.
+- 🖥️ Modo de presentación con el contador ampliado.
+- ☰ Menú desplegable accesible durante el modo de presentación.
+- ⛶ Opción de pantalla completa.
+- 📱 Diseño adaptable a computadores, tabletas y dispositivos móviles.
+- 🎨 Interfaz sencilla, con controles diseñados para facilitar su uso.
 
 ## 🖼️ Vista previa
 
